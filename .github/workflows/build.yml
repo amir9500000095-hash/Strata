@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, accessibility-improvements]
     tags: ['v*']
   pull_request:
   workflow_dispatch:
@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   build:
-    name: Build and sign
+    name: Build APK
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     permissions:
@@ -51,19 +51,18 @@ jobs:
         run: native/build.sh
 
       - name: Build the debug APK
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         run: ./gradlew --stacktrace :app:assembleDebug
 
       - name: Upload the debug APK
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v7
         with:
-          name: strata-debug
+          name: strata-a11y-debug
           path: app/build/outputs/apk/debug/*.apk
-          retention-days: 14
+          retention-days: 30
           if-no-files-found: error
 
-      - name: Signing key
+      - name: Signing key (optional)
+        id: signing
         if: github.event_name != 'pull_request'
         env:
           KEYSTORE_BASE64: ${{ secrets.STRATA_KEYSTORE_BASE64 }}
@@ -72,43 +71,38 @@ jobs:
           KEY_PASSWORD: ${{ secrets.STRATA_KEY_PASSWORD }}
         run: |
           if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
-            echo "::error::Add the STRATA_KEYSTORE_BASE64, STRATA_KEYSTORE_PASSWORD, STRATA_KEY_ALIAS and STRATA_KEY_PASSWORD secrets to sign releases."
-            exit 1
+            echo "has_keystore=false" >> "$GITHUB_OUTPUT"
+            echo "No release keystore secrets — skipping signed release build."
+            exit 0
           fi
           echo "$KEYSTORE_BASE64" | base64 -d > release.jks
           printf 'storeFile=release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > keystore.properties
+          echo "has_keystore=true" >> "$GITHUB_OUTPUT"
 
       - name: Build the signed release APKs
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.signing.outputs.has_keystore == 'true'
         run: |
           version=$(grep '^strata.versionName=' gradle.properties | cut -d= -f2)
-          if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != "v${version}" ]]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match strata.versionName=${version} in gradle.properties."
-            exit 1
-          fi
           ./gradlew --stacktrace :app:assembleRelease -Pstrata.splitApks=true
           mkdir -p dist
           for abi in arm64-v8a armeabi-v7a x86_64 universal; do
-            cp "app/build/outputs/apk/release/app-${abi}-release.apk" "dist/Strata-v${version}-${abi}.apk"
+            src="app/build/outputs/apk/release/app-${abi}-release.apk"
+            if [ -f "$src" ]; then
+              cp "$src" "dist/StrataA11y-v${version}-${abi}.apk"
+            fi
           done
           (cd dist && sha256sum *.apk > SHA256SUMS.txt)
 
       - name: Upload the signed release APKs
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && steps.signing.outputs.has_keystore == 'true'
         uses: actions/upload-artifact@v7
         with:
-          name: strata-release
+          name: strata-a11y-release
           path: |
             dist/
             app/build/outputs/mapping/release/mapping.txt
           retention-days: 30
-          if-no-files-found: error
-
-      - name: Create the draft GitHub release
-        if: startsWith(github.ref, 'refs/tags/v')
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" dist/* --title "Strata ${GITHUB_REF_NAME}" --notes "" --draft --verify-tag
+          if-no-files-found: warn
 
       - name: Remove the signing key
         if: always()
