@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Accessibility / TalkBack labels for file manager -->
+    <string name="a11y_folder">Folder</string>
+    <string name="a11y_file">File</string>
+    <string name="a11y_symlink">Symbolic link</string>
+    <string name="a11y_selected">Selected</string>
+    <string name="a11y_not_selected">Not selected</string>
+    <string name="a11y_open_item">Open</string>
+    <string name="a11y_select_item">Select</string>
+    <string name="a11y_file_row">%1$s, %2$s%3$s%4$s</string>
+    <!-- %1$s = name, %2$s = type (Folder/File/link), %3$s = ", size" or empty, %4$s = ", date" or empty -->
+    <string name="a11y_size_part">, size %1$s</string>
+    <string name="a11y_date_part">, modified %1$s</string>
+    <string name="a11y_pane_left">Left pane</string>
+    <string name="a11y_pane_right">Right pane</string>
+    <string name="a11y_list_heading">File list</string>
+    <string name="a11y_dual_pane">Dual pane file manager</string>
+    <string name="a11y_selection_count">%1$d items selected</string>
+    <string name="a11y_empty_folder">Empty folder</string>
+    <string name="a11y_go_up">Go up one folder</string>
+    <string name="a11y_current_path">Current path %1$s</string>
+</resources>

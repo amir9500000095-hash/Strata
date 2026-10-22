@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- برچسب‌های دسترس‌پذیری / TalkBack برای مدیریت فایل -->
+    <string name="a11y_folder">پوشه</string>
+    <string name="a11y_file">فایل</string>
+    <string name="a11y_symlink">لینک نمادین</string>
+    <string name="a11y_selected">انتخاب‌شده</string>
+    <string name="a11y_not_selected">انتخاب‌نشده</string>
+    <string name="a11y_open_item">باز کردن</string>
+    <string name="a11y_select_item">انتخاب</string>
+    <string name="a11y_file_row">%1$s، %2$s%3$s%4$s</string>
+    <string name="a11y_size_part">، اندازه %1$s</string>
+    <string name="a11y_date_part">، تغییر یافته %1$s</string>
+    <string name="a11y_pane_left">پنل چپ</string>
+    <string name="a11y_pane_right">پنل راست</string>
+    <string name="a11y_list_heading">فهرست فایل‌ها</string>
+    <string name="a11y_dual_pane">مدیر فایل دو پنلی</string>
+    <string name="a11y_selection_count">%1$d مورد انتخاب شده</string>
+    <string name="a11y_empty_folder">پوشه خالی</string>
+    <string name="a11y_go_up">رفتن به پوشه بالاتر</string>
+    <string name="a11y_current_path">مسیر فعلی %1$s</string>
+</resources>
